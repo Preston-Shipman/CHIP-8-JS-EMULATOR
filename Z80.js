@@ -1,4 +1,4 @@
-Z80 = {
+function z80 () = {
     // Time Clock
     _clock: {m:0, t:0},
     // Register Set
@@ -31,7 +31,7 @@ Z80 = {
         }
 };
 
-MMU = {
+function mmu () = {
     rb: function(addr) {
         /*Read 8 bit byte from a given address */
     }
