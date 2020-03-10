@@ -11,7 +11,7 @@ Z80 = {
         ADDr_e: function() {
         Z80._r.a += Z80._r.e; //Permorming addition adding e to a
         Z80._r.f = 0; //clear all flags from f memory
-        if(!(Z80._r.a & 255)) Z80._r.f |= 0x80; //Check for zero 
+        if(!(Z80._r.a & 255)) Z80._r.f |= 0x80; //Check for zero
         if(Z80._r.a > 255) Z80._r.f |= 0x10; //Check for carry
         Z80._r.a &= 255; //Mask to 8-bits
         Z80._r.m = 1; Z80._r.t = 4;
@@ -44,4 +44,30 @@ MMU = {
     ww: function(addr, val) {
         /* Write a 16 bit word to a given address */
     }
+}
+
+// Push registers B and C to the stack (PUSH BC)
+function PUSHBC () {
+    Z80._r.sp--;                               // Drop through the stack
+    MMU.wb(Z80._r.sp, Z80._r.b);               // Write B
+    Z80._r.sp--;                               // Drop through the stack
+    MMU.wb(Z80._r.sp, Z80._r.c);               // Write C
+    Z80._r.m = 3; Z80._r.t = 12;               // 3 M-times taken
+},
+
+// Pop registers H and L off the stack (POP HL)
+function POPHL () {
+    Z80._r.l = MMU.rb(Z80._r.sp);              // Read L
+    Z80._r.sp++;                               // Move back up the stack
+    Z80._r.h = MMU.rb(Z80._r.sp);              // Read H
+    Z80._r.sp++;                               // Move back up the stack
+    Z80._r.m = 3; Z80._r.t = 12;               // 3 M-times taken
+}
+
+// Read a byte from absolute location into A (LD A, addr)
+function LDAmm() {
+    var addr = MMU.rw(Z80._r.pc);              // Get address from instr
+    Z80._r.pc += 2;                            // Advance PC
+    Z80._r.a = MMU.rb(addr);                   // Read from address
+    Z80._r.m = 4; Z80._r.t = 16;                 // 4 M-times taken
 }
