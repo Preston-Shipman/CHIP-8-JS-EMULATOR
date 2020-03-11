@@ -66,8 +66,37 @@ function POPHL () {
 
 // Read a byte from absolute location into A (LD A, addr)
 function LDAmm() {
-    var addr = MMU.rw(Z80._r.pc);              // Get address from instr
+    const addr = MMU.rw(Z80._r.pc);              // Get address from instr
     Z80._r.pc += 2;                            // Advance PC
     Z80._r.a = MMU.rb(addr);                   // Read from address
     Z80._r.m = 4; Z80._r.t = 16;                 // 4 M-times taken
 }
+// Reset the cpu on start up.
+function reset() {
+    Z80._r.a = 0;
+    Z80._r.b = 0;
+    Z80._r.c = 0;
+    Z80._r.d = 0;
+    Z80._r.f = 0;
+    Z80._r.sp = 0;
+    Z80._r.pc = 0;
+    Z80._clock.m = 0;
+    Z80._clock.t = 0;
+}
+// Loop to take instruction and decode where to send for execution.
+while(true) {
+    const op = MMU.rb(Z80._r.pc++);
+    Z80._map[op]();
+    Z80._r.pc &= 65535;
+    Z80._clock.m += Z80._r.m;
+    Z80._clock.t += Z80._r.t;
+}
+
+Z80._map = [
+    Z80._ops.NOP,
+    Z80._ops.LDBCnn,
+    Z80._ops.LDBCmA,
+    Z80._ops.INCBC,
+    Z80._ops.INCr_b,
+    ...
+];
